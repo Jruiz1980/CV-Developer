@@ -3,18 +3,24 @@
   "description": "Simple api sample in Node",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
+  "main": "index.mjs",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "concurrently \"npm run tailwind:watch\" \"nodemon index.mjs\"",
+    "start": "node index.mjs",
+    "tailwind:watch": "./node_modules/.bin/tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
   },
   "author": "Google LLC",
   "license": "Apache-2.0",
   "dependencies": {
+    "ejs": "^3.1.10",
     "express": "^4.21.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "autoprefixer": "^10.4.22",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.0.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18"
   }
 }
