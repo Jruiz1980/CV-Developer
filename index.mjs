@@ -92,6 +92,13 @@ app.use((req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, async () => {
+    // --- TEMPORARY DEBUGGING STEP ---
+    console.log('--- INICIO DE DEPURACIÓN DE VARIABLES DE ENTORNO ---');
+    console.log('El servidor ha recibido las siguientes claves de entorno:');
+    console.log(Object.keys(process.env));
+    console.log('--- FIN DE DEPURACIÓN ---');
+    // ---------------------------------
+
     await initializeFirebase(); 
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
