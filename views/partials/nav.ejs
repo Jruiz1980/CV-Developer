@@ -1,11 +1,34 @@
 <nav class="bg-gray-700 text-white p-4">
-    <div class="container mx-auto">
-        <ul class="flex space-x-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="/" class="text-xl font-bold">Mi Portafolio</a>
+
+        <!-- Botón de Hamburguesa (visible en móvil) -->
+        <div class="md:hidden">
+            <button id="menu-btn" class="focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Menú de Escritorio (visible en pantallas medianas y grandes) -->
+        <ul class="hidden md:flex space-x-4">
             <li><a href="/" class="hover:text-gray-300">Home</a></li>
-            <li><a href="/estudios" class="hover:text-gray-300">Estudios Realizados</a></li>
+            <li><a href="/estudios" class="hover:text-gray-300">Estudios</a></li>
             <li><a href="/experiencia" class="hover:text-gray-300">Experiencia</a></li>
             <li><a href="/proyectos" class="hover:text-gray-300">Proyectos</a></li>
             <li><a href="/contacto" class="hover:text-gray-300">Contacto</a></li>
+        </ul>
+    </div>
+
+    <!-- Menú Móvil (oculto por defecto, se muestra al hacer clic) -->
+    <div id="mobile-menu" class="hidden md:hidden mt-4">
+        <ul class="flex flex-col space-y-2">
+            <li><a href="/" class="block py-2 px-4 hover:bg-gray-600 rounded">Home</a></li>
+            <li><a href="/estudios" class="block py-2 px-4 hover:bg-gray-600 rounded">Estudios</a></li>
+            <li><a href="/experiencia" class="block py-2 px-4 hover:bg-gray-600 rounded">Experiencia</a></li>
+            <li><a href="/proyectos" class="block py-2 px-4 hover:bg-gray-600 rounded">Proyectos</a></li>
+            <li><a href="/contacto" class="block py-2 px-4 hover:bg-gray-600 rounded">Contacto</a></li>
         </ul>
     </div>
 </nav>
