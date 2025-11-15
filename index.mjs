@@ -12,17 +12,23 @@ let db; // This will hold the Firestore database instance
 
 async function initializeFirebase() {
     try {
-        // Build the credentials object from individual environment variables
-        const serviceAccount = {
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // The private key comes with escaped newlines, we need to replace them
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        };
+        // 1. Capture environment variables
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-        if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-            throw new Error('Faltan una o más variables de entorno de Firebase (PROJECT_ID, CLIENT_EMAIL, PRIVATE_KEY).');
-        }
+        // 2. Check for their existence BEFORE using them
+        if (!projectId) throw new Error('La variable de entorno FIREBASE_PROJECT_ID no está definida.');
+        if (!clientEmail) throw new Error('La variable de entorno FIREBASE_CLIENT_EMAIL no está definida.');
+        if (!privateKey) throw new Error('La variable de entorno FIREBASE_PRIVATE_KEY no está definida o está vacía.');
+
+        // 3. Build the credentials object now that we know they exist
+        const serviceAccount = {
+            projectId,
+            clientEmail,
+            // The private key comes with escaped newlines, we need to replace them
+            privateKey: privateKey.replace(/\\n/g, '\n'),
+        };
 
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
