@@ -37,6 +37,11 @@ app.get('/experiencia', (req, res) => {
     res.render('experiencia');
 });
 
+// Estudios Page
+app.get('/estudios', (req, res) => {
+    res.render('estudios');
+});
+
 // Proyectos Page
 app.get('/proyectos', (req, res) => {
     res.render('proyectos');

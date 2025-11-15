@@ -1,0 +1,53 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<%- include('partials/nav') %>
+
+<main class="container mx-auto p-4">
+    <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">Estudios y Formación</h2>
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Contenedor de los estudios -->
+        <div class="space-y-8">
+
+            <!-- Ejemplo de Estudio 1: Título Universitario -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div class="flex justify-between items-start flex-wrap">
+                    <h3 class="text-xl font-bold text-gray-900">Desarrollo de Aplicaciones Web</h3>
+                    <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full mt-2 sm:mt-0">2021 - 2023</span>
+                </div>
+                <p class="text-md font-semibold text-blue-700 mt-1">Instituto Profesional de Tecnología</p>
+                <p class="text-gray-600 mt-4">
+                    Formación intensiva en el desarrollo de aplicaciones web full-stack. Aprendizaje en tecnologías como HTML, CSS, JavaScript, Node.js, Express, y bases de datos SQL y NoSQL. Proyecto final: una aplicación de e-commerce completa.
+                </p>
+            </div>
+
+            <!-- Ejemplo de Estudio 2: Certificación Online -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div class="flex justify-between items-start flex-wrap">
+                    <h3 class="text-xl font-bold text-gray-900">Certificación en Cloud Computing</h3>
+                    <span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full mt-2 sm:mt-0">2023</span>
+                </div>
+                <p class="text-md font-semibold text-green-700 mt-1">Plataforma de Cursos Online</p>
+                <p class="text-gray-600 mt-4">
+                    Curso enfocado en los fundamentos de la computación en la nube, incluyendo servicios de IaaS, PaaS y SaaS. Experiencia práctica con AWS y Google Cloud para el despliegue y gestión de aplicaciones escalables.
+                </p>
+            </div>
+            
+            <!-- Ejemplo de Estudio 3: Formación Profesional -->
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div class="flex justify-between items-start flex-wrap">
+                    <h3 class="text-xl font-bold text-gray-900">Técnico Superior en Sistemas Microinformáticos</h3>
+                    <span class="bg-purple-100 text-purple-800 text-sm font-semibold px-3 py-1 rounded-full mt-2 sm:mt-0">2019 - 2021</span>
+                </div>
+                <p class="text-md font-semibold text-purple-700 mt-1">Centro de Formación Profesional</p>
+                <p class="text-gray-600 mt-4">
+                    Fundamentos de hardware, sistemas operativos (Windows y Linux), redes locales, seguridad informática y scripting básico.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
+<%- include('partials/scripts') %>
