@@ -1,3 +1,4 @@
+
 import 'dotenv/config';
 import express from 'express';
 import { Resend } from 'resend';
@@ -10,16 +11,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 let db; // This will hold the Firestore database instance
 
 async function initializeFirebase() {
-    // Read credentials from the environment variable provided by Render
-    const serviceAccountJson = process.env.FIREBASE_CREDENTIALS_JSON;
-
     try {
-        if (!serviceAccountJson) {
-            // This error will be thrown if the environment variable is missing
-            throw new Error('La variable de entorno FIREBASE_CREDENTIALS_JSON no está definida. Asegúrate de configurarla en Render.');
-        }
+        // Build the credentials object from individual environment variables
+        const serviceAccount = {
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            // The private key comes with escaped newlines, we need to replace them
+            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        };
 
-        const serviceAccount = JSON.parse(serviceAccountJson);
+        if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+            throw new Error('Faltan una o más variables de entorno de Firebase (PROJECT_ID, CLIENT_EMAIL, PRIVATE_KEY).');
+        }
 
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
@@ -29,11 +32,7 @@ async function initializeFirebase() {
         console.log('✅ Conexión exitosa a Firebase y Firestore.');
 
     } catch (error) {
-        console.error(
-            '🔥 ERROR FATAL: No se pudo inicializar Firebase.',
-            error
-        );
-        // Exit the process if the database connection fails, as the app is useless without it.
+        console.error('🔥 ERROR FATAL: No se pudo inicializar Firebase.', error);
         process.exit(1);
     }
 }
@@ -92,13 +91,6 @@ app.use((req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, async () => {
-    // --- TEMPORARY DEBUGGING STEP ---
-    console.log('--- INICIO DE DEPURACIÓN DE VARIABLES DE ENTORNO ---');
-    console.log('El servidor ha recibido las siguientes claves de entorno:');
-    console.log(Object.keys(process.env));
-    console.log('--- FIN DE DEPURACIÓN ---');
-    // ---------------------------------
-
     await initializeFirebase(); 
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
