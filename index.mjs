@@ -1,14 +1,26 @@
-
+import 'dotenv/config'; // Load environment variables
 import express from 'express';
-import fs from 'fs/promises'; // Import the 'fs/promises' module
+import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import nodemailer from 'nodemailer'; // Import nodemailer
 
 // Determine the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// --- Nodemailer Transporter Setup ---
+// Create a transporter object using Gmail SMTP
+// We use environment variables to keep credentials secure
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER, // Your Gmail address from .env
+        pass: process.env.EMAIL_PASS, // Your Gmail App Password from .env
+    },
+});
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -72,7 +84,6 @@ app.post('/contacto', async (req, res) => {
             const data = await fs.readFile(contactsFilePath, 'utf8');
             contacts = JSON.parse(data);
         } catch (readError) {
-            // If the file doesn't exist, we'll create it with the new contact
             if (readError.code !== 'ENOENT') throw readError;
         }
 
@@ -81,14 +92,39 @@ app.post('/contacto', async (req, res) => {
 
         // Write the updated list back to the file
         await fs.writeFile(contactsFilePath, JSON.stringify(contacts, null, 2), 'utf8');
-
         console.log(`Contacto guardado: ${name} (${email})`);
+
+        // --- Send Email Notification ---
+        try {
+            const mailOptions = {
+                from: `"Notificación Portafolio" <${process.env.EMAIL_USER}>`, // sender address
+                to: process.env.EMAIL_USER, // list of receivers (yourself)
+                subject: 'Nuevo Mensaje de Contacto ✔',
+                html: `
+                    <p>Has recibido un nuevo mensaje desde tu portafolio.</p>
+                    <ul>
+                        <li><strong>Nombre:</strong> ${name}</li>
+                        <li><strong>Email:</strong> ${email}</li>
+                    </ul>
+                    <p><strong>Mensaje:</strong></p>
+                    <p>${message}</p>
+                `,
+            };
+
+            await transporter.sendMail(mailOptions);
+            console.log('Correo de notificación enviado con éxito.');
+
+        } catch (emailError) {
+            console.error('Error al enviar el correo de notificación:', emailError);
+            // We don't block the user response for this, just log the error
+        }
 
         // Redirect to a simple "thank you" page
         res.redirect('/gracias');
+
     } catch (error) {
-        console.error('Error al guardar el contacto:', error);
-        res.status(500).send('Error interno del servidor al guardar el contacto.');
+        console.error('Error al procesar el formulario de contacto:', error);
+        res.status(500).send('Error interno del servidor al procesar el contacto.');
     }
 });
 
