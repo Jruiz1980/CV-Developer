@@ -12,7 +12,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // --- Resend Client Setup ---
-// Initialize Resend with the API key from environment variables
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Set EJS as the view engine
@@ -52,6 +51,7 @@ app.post('/contacto', async (req, res) => {
             receivedAt: new Date().toISOString(),
         };
 
+        // 1. Read existing contacts
         let contacts = [];
         try {
             const data = await fs.readFile(contactsFilePath, 'utf8');
@@ -60,33 +60,42 @@ app.post('/contacto', async (req, res) => {
             if (readError.code !== 'ENOENT') throw readError;
         }
 
+        // 2. Add new contact and WAIT for the file to be saved
         contacts.push(newContact);
         await fs.writeFile(contactsFilePath, JSON.stringify(contacts, null, 2), 'utf8');
         console.log(`Contacto guardado: ${name} (${email})`);
 
-        // --- Send Email Notification using Resend (in the background) ---
-        resend.emails.send({
-            from: 'onboarding@resend.dev', // Required for the free plan
-            to: process.env.EMAIL_USER, // Your email address to receive notifications
-            subject: 'Nuevo Mensaje de Contacto ✔',
-            html: `
-                <p>Has recibido un nuevo mensaje desde tu portafolio.</p>
-                <ul>
-                    <li><strong>Nombre:</strong> ${name}</li>
-                    <li><strong>Email:</strong> ${email}</li>
-                </ul>
-                <p><strong>Mensaje:</strong></p>
-                <p>${message}</p>
-            `,
-        })
-        .then(response => console.log('Correo de notificación enviado con Resend:', response.id))
-        .catch(error => console.error('Error al enviar correo con Resend:', error));
+        // 3. Send email notification and WAIT for the API response
+        try {
+            const { data, error } = await resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to: process.env.EMAIL_USER,
+                subject: 'Nuevo Mensaje de Contacto ✔',
+                html: `
+                    <p>Has recibido un nuevo mensaje desde tu portafolio.</p>
+                    <ul>
+                        <li><strong>Nombre:</strong> ${name}</li>
+                        <li><strong>Email:</strong> ${email}</li>
+                    </ul>
+                    <p><strong>Mensaje:</strong></p>
+                    <p>${message}</p>
+                `,
+            });
 
-        // Immediately redirect to the thank you page
+            if (error) {
+                console.error('Error reportado por Resend al enviar correo:', error);
+            } else {
+                console.log('Correo de notificación enviado con Resend:', data.id);
+            }
+        } catch (emailError) {
+            console.error('Fallo en la llamada a la API de Resend:', emailError);
+        }
+
+        // 4. Finally, redirect the user after all operations are complete
         res.redirect('/gracias');
 
     } catch (error) {
-        console.error('Error al procesar el formulario de contacto:', error);
+        console.error('Error crítico al procesar el formulario de contacto:', error);
         res.status(500).send('Error interno del servidor al procesar el contacto.');
     }
 });
