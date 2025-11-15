@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import { Resend } from 'resend';
 import admin from 'firebase-admin';
-import fs from 'fs/promises';
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -11,11 +10,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 let db; // This will hold the Firestore database instance
 
 async function initializeFirebase() {
-    // In Render, secret files are mounted at this specific path
-    const serviceAccountPath = '/etc/secrets/firebase-credentials.json';
+    // Read credentials from the environment variable provided by Render
+    const serviceAccountJson = process.env.FIREBASE_CREDENTIALS_JSON;
+
     try {
-        const serviceAccountContent = await fs.readFile(serviceAccountPath, 'utf8');
-        const serviceAccount = JSON.parse(serviceAccountContent);
+        if (!serviceAccountJson) {
+            // This error will be thrown if the environment variable is missing
+            throw new Error('La variable de entorno FIREBASE_CREDENTIALS_JSON no está definida. Asegúrate de configurarla en Render.');
+        }
+
+        const serviceAccount = JSON.parse(serviceAccountJson);
 
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
@@ -26,7 +30,7 @@ async function initializeFirebase() {
 
     } catch (error) {
         console.error(
-            '🔥 ERROR FATAL: No se pudo inicializar Firebase. Revisa que el archivo `firebase-credentials.json` esté correctamente configurado como un Secret File en Render.',
+            '🔥 ERROR FATAL: No se pudo inicializar Firebase.',
             error
         );
         // Exit the process if the database connection fails, as the app is useless without it.
@@ -54,19 +58,16 @@ app.get('/gracias', (req, res) => res.render('gracias'));
 app.post('/contacto', async (req, res) => {
     const { name, email, message } = req.body;
     try {
-        // 1. Prepare data object (Firestore will generate a unique ID automatically)
         const newContact = {
             name,
             email,
             message,
-            receivedAt: new Date(), // Firestore handles timestamp objects perfectly
+            receivedAt: new Date(),
         };
 
-        // 2. Save the contact to the 'contacts' collection in Firestore
         const docRef = await db.collection('contacts').add(newContact);
         console.log(`Contacto guardado en Firestore con ID: ${docRef.id}`);
 
-        // 3. Send email notification (this can run in the background)
         resend.emails.send({
             from: 'onboarding@resend.dev',
             to: process.env.EMAIL_USER,
@@ -76,7 +77,6 @@ app.post('/contacto', async (req, res) => {
         .then(() => console.log('Correo de notificación enviado.'))
         .catch(err => console.error('Error enviando correo:', err));
         
-        // 4. Redirect the user to the thank you page
         res.redirect('/gracias');
 
     } catch (error) {
@@ -92,7 +92,6 @@ app.use((req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, async () => {
-    // Initialize Firebase before starting the server
     await initializeFirebase(); 
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
