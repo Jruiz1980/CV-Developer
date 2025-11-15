@@ -3,7 +3,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import nodemailer from 'nodemailer'; // Import nodemailer
+import { Resend } from 'resend'; // Import Resend
 
 // Determine the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -11,14 +11,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// --- Nodemailer Transporter Setup ---
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// --- Resend Client Setup ---
+// Initialize Resend with the API key from environment variables
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -69,10 +64,10 @@ app.post('/contacto', async (req, res) => {
         await fs.writeFile(contactsFilePath, JSON.stringify(contacts, null, 2), 'utf8');
         console.log(`Contacto guardado: ${name} (${email})`);
 
-        // --- Send Email Notification (in the background) ---
-        const mailOptions = {
-            from: `"Notificación Portafolio" <${process.env.EMAIL_USER}>`,
-            to: process.env.EMAIL_USER,
+        // --- Send Email Notification using Resend (in the background) ---
+        resend.emails.send({
+            from: 'onboarding@resend.dev', // Required for the free plan
+            to: process.env.EMAIL_USER, // Your email address to receive notifications
             subject: 'Nuevo Mensaje de Contacto ✔',
             html: `
                 <p>Has recibido un nuevo mensaje desde tu portafolio.</p>
@@ -83,12 +78,9 @@ app.post('/contacto', async (req, res) => {
                 <p><strong>Mensaje:</strong></p>
                 <p>${message}</p>
             `,
-        };
-
-        // Send the email but don't wait for it. This makes the user experience faster.
-        transporter.sendMail(mailOptions)
-            .then(info => console.log('Correo de notificación enviado:', info.response))
-            .catch(err => console.error('Error al enviar el correo de notificación:', err));
+        })
+        .then(response => console.log('Correo de notificación enviado con Resend:', response.id))
+        .catch(error => console.error('Error al enviar correo con Resend:', error));
 
         // Immediately redirect to the thank you page
         res.redirect('/gracias');
